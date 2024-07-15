@@ -42,7 +42,7 @@
 
     &>* {
       width: 100%;
-      background: $light-grey;
+      background: $background-gradient;
     }
 
     h2 {
