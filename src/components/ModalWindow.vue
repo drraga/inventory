@@ -132,7 +132,6 @@ const closeModal = () => {
     }
 
     > h3 {
-      // margin: 0 0 24px;
       margin: 0 0 8px;
       padding: 15px;
       border-radius: 8px;
@@ -145,7 +144,6 @@ const closeModal = () => {
     }
 
     > p {
-      // margin: 0 0 16px;
       padding: 5px;
       border-radius: 4px;
 

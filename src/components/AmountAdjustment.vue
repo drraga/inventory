@@ -3,12 +3,6 @@ import { ref } from 'vue';
 import ButtonDelete from '@/components/ButtonDelete.vue';
 
 const emit = defineEmits(['close', 'deleteAmount']);
-// const emit = defineEmits({
-//   close: null,
-//   deleteAmount: (payload) => {
-//     return typeof payload === 'number' && payload > 0 && payload <= 999 ? true : false;
-//   },
-// });
 
 const inputValue = ref(null);
 const isFormAccepted = ref(true);

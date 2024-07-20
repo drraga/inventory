@@ -57,6 +57,10 @@ const onTouchStart = (event, cellId) => {
     draggedElement.value = document.querySelector(
       `.items-grid__item[data-id="${touchItem.value.id}"]`,
     );
+
+    if (draggedElement.value) {
+      draggedElement.value.style.transition = 'none';
+    }
   }
 };
 
@@ -87,29 +91,9 @@ const onTouchEnd = (event) => {
 
   if (cellId) {
     setItemPosition(touchItem.value.id, cellId);
-
-    if (draggedElement.value) {
-      const targetCell = document.querySelector(`.items-grid__cell[data-id="${cellId}"]`);
-      const targetRect = targetCell.getBoundingClientRect();
-
-      const gridRect = gridElement.value.getBoundingClientRect();
-      const offsetX = targetRect.left - gridRect.left;
-      const offsetY = targetRect.top - gridRect.top;
-      draggedElement.value.style.transition = 'transform 0.3s ease';
-      draggedElement.value.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-    }
-  }
-  setTimeout(() => {
-    if (draggedElement.value) {
-      draggedElement.value.style.transition = '';
-      draggedElement.value.style.transform = '';
-    }
-    touchItem.value = null;
-    touchStartX.value = 0;
-    touchStartY.value = 0;
     isDragging.value = false;
     draggedElement.value = null;
-  }, 300);
+  }
 };
 
 onMounted(() => {
@@ -226,12 +210,10 @@ const modalOpen = (item) => {
     &:active {
       overflow: hidden;
       border: 1px solid $light-grey;
-      // border-radius: 24px;
       border-radius: clamp(6px, (24 * 100 / 849) * 1vw, 24px);
       cursor: grabbing;
 
       > p {
-        // transition: opacity 0.2s $easeInOutCubic;
         opacity: 0;
       }
     }
