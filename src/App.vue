@@ -1,6 +1,16 @@
 <script setup>
-import InventoryDetails from '@/components/InventoryDetails.vue'
-import InventoryFooter from '@/components/InventoryFooter.vue'
+import { onMounted } from 'vue';
+
+import { useInventoryStore } from './stores/inventory';
+const inventoryStore = useInventoryStore();
+
+import InventoryDetails from '@/components/InventoryDetails.vue';
+import InventoryFooter from '@/components/InventoryFooter.vue';
+import InventoryItems from '@/components/InventoryItems.vue';
+
+onMounted(() => {
+  inventoryStore.loadFromLocalStorage();
+});
 </script>
 
 <template>
@@ -9,17 +19,10 @@ import InventoryFooter from '@/components/InventoryFooter.vue'
   </aside>
 
   <main>
-    <div>here</div>
+    <InventoryItems />
   </main>
 
   <footer>
     <InventoryFooter />
   </footer>
 </template>
-
-<style lang="scss">
-footer {
-  grid-column: 1 / 3;
-  grid-row: 2 / 3;
-}
-</style>
