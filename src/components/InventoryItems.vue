@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useInventoryStore } from '@/stores/inventory';
 
@@ -11,6 +11,12 @@ import ItemPicture from '@/assets/icons/ItemPicture.vue';
 import ModalWindow from '@/components/ModalWindow.vue';
 
 const gridCells = ref([...Array(25).keys()].map((index) => ({ id: index + 1 })));
+
+const touchItem = ref(null);
+const touchStartX = ref(0);
+const touchStartY = ref(0);
+const gridElement = ref(null);
+const draggedElement = ref(null);
 
 const indexOld = ref(null);
 const indexCurrent = ref(null);
@@ -39,6 +45,65 @@ const onDrop = (event, cellId) => {
   handleDragend();
 };
 
+const onTouchStart = (event, cellId) => {
+  const item = getItemInCell.value(cellId);
+
+  if (item) {
+    touchItem.value = item;
+    touchStartX.value = event.touches[0].clientX;
+    touchStartY.value = event.touches[0].clientY;
+
+    isDragging.value = true;
+    draggedElement.value = document.querySelector(
+      `.items-grid__item[data-id="${touchItem.value.id}"]`,
+    );
+
+    if (draggedElement.value) {
+      draggedElement.value.style.transition = 'none';
+    }
+  }
+};
+
+const onTouchMove = (event) => {
+  if (!touchItem.value || !isDragging.value) return;
+  event.preventDefault();
+  const touch = event.touches[0];
+  const moveX = touch.clientX - touchStartX.value;
+  const moveY = touch.clientY - touchStartY.value;
+  if (draggedElement.value) {
+    draggedElement.value.style.transform = `translate(${moveX}px, ${moveY}px)`;
+  }
+};
+
+const onTouchEnd = (event) => {
+  if (!touchItem.value || !isDragging.value) return;
+  const touch = event.changedTouches[0];
+  const endX = touch.clientX;
+  const endY = touch.clientY;
+
+  let cellId = null;
+  document.querySelectorAll('.items-grid__cell').forEach((cell) => {
+    const rect = cell.getBoundingClientRect();
+    if (endX >= rect.left && endX <= rect.right && endY >= rect.top && endY <= rect.bottom) {
+      cellId = parseInt(cell.dataset.id);
+    }
+  });
+
+  if (cellId) {
+    setItemPosition(touchItem.value.id, cellId);
+    isDragging.value = false;
+    draggedElement.value = null;
+  }
+};
+
+onMounted(() => {
+  gridElement.value = document.querySelector('.items-grid__wrapper');
+});
+
+onBeforeUnmount(() => {
+  gridElement.value = null;
+});
+
 const isModalOpened = ref(false);
 const isDragging = ref(true);
 const selectedItem = ref(null);
@@ -54,15 +119,20 @@ const modalOpen = (item) => {
       <div
         v-for="cell in gridCells"
         :key="cell.id"
+        :data-id="cell.id"
         class="items-grid__cell"
         :class="{ draggable: cell.id === indexCurrent }"
         @drop="onDrop($event, cell.id)"
         @dragover.prevent="onDragOver(cell.id)"
+        @touchstart="onTouchStart($event, cell.id)"
+        @touchmove="onTouchMove($event)"
+        @touchend="onTouchEnd"
       >
         <div
           v-if="getItemInCell(cell.id)"
           class="items-grid__item"
           :class="{ dragging: isDragging }"
+          :data-id="getItemInCell(cell.id).id"
           :draggable="true"
           @dragstart="onDragStart($event, getItemInCell(cell.id).id, cell.id)"
           @click="modalOpen(getItemInCell(cell.id))"
@@ -115,6 +185,7 @@ const modalOpen = (item) => {
 
   &__item {
     height: 100%;
+    touch-action: none;
 
     &:active {
       cursor: url('/src/assets/pointers/pointerHover.svg'), pointer;
@@ -139,12 +210,10 @@ const modalOpen = (item) => {
     &:active {
       overflow: hidden;
       border: 1px solid $light-grey;
-      // border-radius: 24px;
       border-radius: clamp(6px, (24 * 100 / 849) * 1vw, 24px);
       cursor: grabbing;
 
       > p {
-        // transition: opacity 0.2s $easeInOutCubic;
         opacity: 0;
       }
     }
@@ -164,7 +233,6 @@ const modalOpen = (item) => {
       text-overflow: ellipsis;
       font-size: clamp(9px, 1.17vw, 15px);
       padding: 0 5px;
-      // transition: opacity 0.2s $easeInOutCubic;
       border: 1px solid $light-grey;
       border-radius: 6px 0 0 0;
     }
