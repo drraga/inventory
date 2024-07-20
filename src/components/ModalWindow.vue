@@ -21,12 +21,18 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits({
+  close: null,
+});
 
 const isDeleteAmountOpened = ref(false);
 
 const deleteAmountFromItem = (e) => {
   deleteItem(props.selectedItem.id, e);
+};
+
+const closeModal = () => {
+  emit('close');
 };
 </script>
 
@@ -41,7 +47,7 @@ const deleteAmountFromItem = (e) => {
           />
 
           <i class="modal-mask__header--close">
-            <ButtonClose @click="$emit('close')" />
+            <ButtonClose @click="closeModal()" />
           </i>
         </div>
 
